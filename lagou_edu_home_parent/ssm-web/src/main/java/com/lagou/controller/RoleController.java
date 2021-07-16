@@ -94,6 +94,11 @@ public class RoleController {
         return new ResponseResult(true, 200, "查询角色资源列表成功", resourceList);
     }
 
+    /**
+     * 更新角色资源关联信息
+     * @param roleResourceVo 前端接收数据，角色Id，资源ID集合
+     * @return json数据
+     */
     @RequestMapping("/roleContextResource")
     public ResponseResult roleContextResource(@RequestBody RoleResourceVo roleResourceVo){
         roleService.roleContextResource(roleResourceVo);
