@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lagou.dao.UserMapper">
+    <!-- 多条件分页查询用户信息 -->
+    <select id="findUserByPageAndCondition" parameterType="UserVo" resultType="User">
+        select * from user
+        <where>
+            <if test="true">
+                and is_del != 1
+            </if>
+            <if test="username != null">
+                and name = #{username}
+            </if>
+            <if test="startCreateTime != null and endCreateTime != null">
+                and create_time BETWEEN #{startCreateTime} AND #{endCreateTime}
+            </if>
+        </where>
+    </select>
+
+    <!-- 用户状态修改 -->
+    <update id="updateUserStatus" parameterType="User">
+        UPDATE user
+        SET status= #{status},
+        update_time = #{update_time}
+        WHERE
+            id = #{id}
+    </update>
+
+    <!-- 通过手机号查询用户 -->
+    <select id="findUserByPhone" parameterType="User" resultType="User">
+        select * from user where phone = #{phone}
+    </select>
+
+    <!-- 根据用户Id查询用户角色 -->
+    <select id="findUserRoleById" parameterType="int" resultType="Role">
+        SELECT
+            *
+        FROM
+            roles AS r
+            INNER JOIN user_role_relation AS urr ON r.id = urr.role_id
+        WHERE
+            user_id = #{uid}
+    </select>
+
+    <!-- 删除用户关联的所有角色 -->
+    <delete id="deleteUserContextRole" parameterType="int">
+        delete from user_role_relation where user_id = #{uid}
+    </delete>
+
+    <!-- 保存用户关联的角色 -->
+    <insert id="saveUserContextRole" parameterType="User_Role_relation">
+        insert into user_role_relation(
+            user_id,
+            role_id,
+            created_time,
+            updated_time,
+            created_by,
+            updated_by
+        )
+        values(
+            #{userId},
+            #{roleId},
+            #{createdTime},
+            #{updatedTime},
+            #{createdBy},
+            #{updatedBy}
+        )
+    </insert>
+
+    <!-- 根据角色id集合查询所关联的顶级菜单信息 -->
+    <select id="findParentMenuByRoleId" parameterType="java.util.List" resultType="Menu">
+        SELECT DISTINCT
+            m.*
+        FROM
+            roles AS r
+            INNER JOIN role_menu_relation AS rm ON r.id = rm.role_id
+            INNER JOIN menu AS m ON rm.menu_id = m.id
+        WHERE
+            m.parent_id = - 1 AND r.id IN
+            <foreach collection="list" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+    </select>
+
+    <!-- 根据父id查询子级菜单信息 -->
+    <select id="findSubMenuByPid" parameterType="int" resultType="Menu">
+        SELECT
+            *
+        FROM
+            menu
+        WHERE
+            parent_id = 5
+    </select>
+
+    <!-- 根据角色id集合查询所关联的资源信息 -->
+    <select id="findResourceByRoleId" parameterType="java.util.List" resultType="Resource">
+        SELECT DISTINCT
+            ro.*
+        FROM
+            roles AS ro
+            INNER JOIN role_resource_relation AS rr ON ro.id = rr.role_id
+            INNER JOIN resource AS re ON rr.resource_id = re.id
+        WHERE
+            ro.id IN
+            <foreach collection="list" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+    </select>
+</mapper>

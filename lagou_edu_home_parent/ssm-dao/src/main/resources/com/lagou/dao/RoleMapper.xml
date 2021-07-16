@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lagou.dao.RoleMapper">
+    <!-- 按条件查询所有角色 -->
+    <select id="findAllRole" parameterType="Role" resultType="Role">
+        select * from roles
+        <where>
+            <if test="name != null and name != ''">
+                name = #{name}
+            </if>
+        </where>
+    </select>
+    
+    <!-- 删除角色关联菜单信息 -->
+    <delete id="deleteRoleContextMenu" parameterType="int">
+        delete from role_menu_relation where role_id = #{roleId};
+    </delete>
+
+    <!-- 添加角色关联菜单信息 -->
+    <insert id="addRoleContextMenu" parameterType="Role_menu_relation">
+        insert into role_menu_relation(
+        menu_id,
+        role_id,
+        created_time,
+        updated_time,
+        created_by,
+        updated_by)
+        values (
+        #{menuId},
+        #{roleId},
+        #{createdTime},
+        #{updatedTime},
+        #{createdBy},
+        #{updatedBy}
+        )
+    </insert>
+
+    <!-- 删除角色信息 -->
+    <delete id="deleteRole" parameterType="int">
+        delete from roles where id = #{roleId}
+    </delete>
+
+    <!-- 根据角色Id查询当前角色拥有的资源分类信息 -->
+    <select id="findResourceCategoryByRoleId" parameterType="int" resultType="ResourceCategory">
+        SELECT DISTINCT
+            rc.*
+        FROM
+            role_resource_relation AS rr
+            INNER JOIN resource AS r ON rr.resource_id = r.id
+            INNER JOIN resource_category AS rc ON r.category_id = rc.id
+        WHERE
+            rr.role_id = #{rid}
+    </select>
+
+    <!-- 根据角色Id查询当前角色所拥有的所有资源信息 -->
+    <select id="findResourceByRoleId" parameterType="int" resultType="Resource">
+        SELECT
+            r.*
+        FROM
+            role_resource_relation AS rr
+            INNER JOIN resource AS r ON rr.resource_id = r.id
+        WHERE
+            rr.role_id = #{rid}
+    </select>
+
+    <!-- 删除角色关联的资源信息 -->
+    <delete id="deleteRoleContextResource" parameterType="int">
+        delete from role_resource_relation where role_id = #{rid}
+    </delete>
+
+    <!-- 添加角色资源关联信息 -->
+    <insert id="saveRoleContextResource" parameterType="RoleResourceRelation">
+        insert into role_resource_relation(
+            resource_id,
+            role_id,
+            created_time,
+            updated_time,
+            created_by,
+            updated_by
+        )
+        values(
+            #{resourceId},
+            #{roleId},
+            #{createdTime},
+            #{updatedTime},
+            #{createdBy},
+            #{updatedBy}
+        )
+    </insert>
+</mapper>
